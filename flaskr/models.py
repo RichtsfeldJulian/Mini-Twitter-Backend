@@ -1,10 +1,11 @@
-from py2neo import Graph, NodeMatcher
+from py2neo import Graph, NodeMatcher, Relationship
 from flaskr import settings
 from py2neo.ogm import GraphObject, Property, RelatedFrom, RelatedTo
 from graphql import GraphQLError
 
 graph = Graph(user=settings.NEO4J_USER, password=settings.NEO4J_PASSWORD)
 matcher = NodeMatcher(graph)
+
 class BaseModel(GraphObject):
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -41,5 +42,5 @@ class User(BaseModel):
     def fetch(self):
         return self.match(graph, self.username).first()
 
-    
+
 

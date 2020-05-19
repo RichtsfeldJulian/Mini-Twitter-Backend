@@ -21,8 +21,4 @@ def create_app(test_config=None):
     def page_not_found(e):
         return jsonify({'message': 'The requested URL was not found on the server.'}), 404
 
-    @app.errorhandler(jsonschema.ValidationError)
-    def onValidationError(e):
-        return jsonify({"message": "There was a validation error: " + e.message}), 400
-
     return app
