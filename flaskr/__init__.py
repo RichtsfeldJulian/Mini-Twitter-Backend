@@ -4,6 +4,7 @@ from .schemas import schema
 from flask_jsonschema_validator.jsonschemavalidator import JSONSchemaValidator
 from flask_graphql_auth import GraphQLAuth
 import jsonschema
+from flask_cors import CORS
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -12,6 +13,7 @@ def create_app(test_config=None):
     ))
 
     GraphQLAuth(app)
+    CORS(app)
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 60
     app.config['JWT_SECRET_KEY'] = 'aVerySecretJwtSigningKey'
 

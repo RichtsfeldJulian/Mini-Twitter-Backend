@@ -28,7 +28,14 @@ class Tweet(BaseModel):
 
     content = Property()
 
-    user = RelatedTo('User', 'TWEETED')
+    user = RelatedFrom('User', 'TWEETED')
+
+    def addUser(self, username):
+        user = User(username=username).fetch()
+        if user is None:
+            raise GraphQLError("User was not found")
+        self.user.add(user)
+
 
 
 class User(BaseModel):

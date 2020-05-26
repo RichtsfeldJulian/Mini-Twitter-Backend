@@ -61,6 +61,15 @@ class RegisterMutation(graphene.Mutation):
         user.save()
         return RegisterMutation(ok=True, access_token=create_access_token(user.username))
 
+class TweetAddMutation(graphene.Mutation):
+    class Arguments(object):
+        token = graphene.String()
+
+    @classmethod
+    @mutation_jwt_required
+    def mutate(cls, _, info):
+        pass
+
 class Query(graphene.ObjectType): 
     tweets = graphene.Field(type=TweetProtected, token=graphene.String())
 
@@ -72,6 +81,7 @@ class Query(graphene.ObjectType):
 class Mutation(graphene.ObjectType): 
     auth = AuthMutation.Field()
     register = RegisterMutation.Field()
+
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
