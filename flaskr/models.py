@@ -49,5 +49,21 @@ class User(BaseModel):
     def fetch(self):
         return self.match(graph, self.username).first()
 
+    def fetch_subscribedUsers(self):
+        return [subscribedUser.as_dict() for subscribedUser in self.subscribedUsers]
+
+
+    def add_subscribedUser(self,username):
+        user = User(username=username).fetch()
+        if user is None:
+            raise GraphQLError("User was not found")
+        self.subscribedUsers.add(user)
+
+
+    def as_dict(self):
+        return {
+            'username':self.username
+        }
+
 
 

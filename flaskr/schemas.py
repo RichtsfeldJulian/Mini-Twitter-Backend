@@ -12,19 +12,7 @@ from flask_graphql_auth import (
 )
 import app
 from flask_bcrypt import Bcrypt
-from flaskr.models import User
-
-class Tweet(graphene.ObjectType):
-    content = graphene.String()
-
-class TweetProtected(graphene.Union):
-    class Meta:
-        types = (Tweet, AuthInfoField)
-
-    @classmethod
-    def resolve_type(cls, instance, info):
-        return type(instance)
-
+from flaskr.models import User, Tweet
 
 class AuthMutation(graphene.Mutation):
     class Arguments(object):
@@ -61,14 +49,51 @@ class RegisterMutation(graphene.Mutation):
         user.save()
         return RegisterMutation(ok=True, access_token=create_access_token(user.username))
 
+
+class UserField(graphene.ObjectType):
+    username = graphene.String()
+    subscribedUsers = graphene.List(lambda: UserField)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def resolve_subscribedUsers(self, info):
+        return [UserField(**user) for user in User(username=self.username).fetch().fetch_subscribedUsers()]
+
+
+class TweetField(graphene.ObjectType):
+    content = graphene.String()
+    user = graphene.Field(UserField)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class TweetProtected(graphene.Union):
+    class Meta:
+        types = (TweetField, AuthInfoField)
+
+    @classmethod
+    def resolve_type(cls, instance, info):
+        return type(instance)
+
 class TweetAddMutation(graphene.Mutation):
     class Arguments(object):
         token = graphene.String()
+        content = graphene.String()
+
+    tweet = graphene.Field(TweetProtected)
+    ok = graphene.Boolean()
 
     @classmethod
     @mutation_jwt_required
-    def mutate(cls, _, info):
-        pass
+    def mutate(cls, _, info, content):
+        tweet = Tweet(content= content)
+        tweet.addUser(get_jwt_identity())
+        tweet.save()
+        return TweetAddMutation(tweet=TweetField(content=tweet.content, user= UserField(username=get_jwt_identity())), ok=True)
+
+
 
 class Query(graphene.ObjectType): 
     tweets = graphene.Field(type=TweetProtected, token=graphene.String())
@@ -76,12 +101,12 @@ class Query(graphene.ObjectType):
     @classmethod
     @query_jwt_required
     def resolve_tweets(self, info, token):
-        return Tweet(content="Successfully ran query")
+        return TweetField(content="Successfully ran query")
 
 class Mutation(graphene.ObjectType): 
     auth = AuthMutation.Field()
     register = RegisterMutation.Field()
-
+    tweets = TweetAddMutation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
