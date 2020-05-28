@@ -6,6 +6,7 @@ from graphql import GraphQLError
 graph = Graph(user=settings.NEO4J_USER, password=settings.NEO4J_PASSWORD)
 matcher = NodeMatcher(graph)
 
+
 class BaseModel(GraphObject):
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -22,9 +23,7 @@ class BaseModel(GraphObject):
     def delete(self):
         graph.delete(self)
 
-
-
-class Tweet(BaseModel): 
+class Tweet(BaseModel):
 
     content = Property()
 
@@ -36,6 +35,13 @@ class Tweet(BaseModel):
             raise GraphQLError("User was not found")
         self.user.add(user)
 
+    def as_dict(self):
+        return {'content': self.content}
+
+    def getAllTweetsForUser(self, username):
+        data = graph.run(
+            f"MATCH (u:User)-[:TWEETED]->(t:Tweet) WHERE u.username=\"{username}\" return t").data()
+        return [dict(tweet['t']) for tweet in data]
 
 
 class User(BaseModel):
@@ -51,19 +57,14 @@ class User(BaseModel):
 
     def fetch_subscribedUsers(self):
         return [subscribedUser.as_dict() for subscribedUser in self.subscribedUsers]
-
-
-    def add_subscribedUser(self,username):
+    def add_subscribedUser(self, username):
         user = User(username=username).fetch()
         if user is None:
             raise GraphQLError("User was not found")
         self.subscribedUsers.add(user)
 
-
     def as_dict(self):
         return {
-            'username':self.username
+            'username': self.username
         }
-
-
 

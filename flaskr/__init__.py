@@ -6,6 +6,7 @@ from flask_graphql_auth import GraphQLAuth
 import jsonschema
 from flask_cors import CORS
 
+
 def create_app(test_config=None):
     app = Flask(__name__)
     app.add_url_rule('/graphql', view_func=GraphQLView.as_view(
@@ -17,7 +18,7 @@ def create_app(test_config=None):
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 60
     app.config['JWT_SECRET_KEY'] = 'aVerySecretJwtSigningKey'
 
-    JSONSchemaValidator(app=app,root="schemas")
+    JSONSchemaValidator(app=app, root="schemas")
 
     @app.errorhandler(404)
     def page_not_found(e):
