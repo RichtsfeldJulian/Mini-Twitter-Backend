@@ -13,15 +13,15 @@ class BaseModel(GraphObject):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    @property
     def all(self):
-        return self.match(graph)
+        return self.match(graph).all()
 
     def save(self):
         graph.push(self)
 
     def delete(self):
         graph.delete(self)
+
 
 class Tweet(BaseModel):
 
@@ -57,14 +57,23 @@ class User(BaseModel):
 
     def fetch_subscribedUsers(self):
         return [subscribedUser.as_dict() for subscribedUser in self.subscribedUsers]
+
     def add_subscribedUser(self, username):
         user = User(username=username).fetch()
         if user is None:
             raise GraphQLError("User was not found")
         self.subscribedUsers.add(user)
 
+    def remove_subscribedUser(self, username):
+        user = User(username=username).fetch()
+        if user is None:
+            raise GraphQLError("User was not found")
+        self.subscribedUsers.remove(user)
+
     def as_dict(self):
         return {
             'username': self.username
         }
 
+    def getAll(self):
+        return User.select(graph).all()
