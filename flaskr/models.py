@@ -77,3 +77,7 @@ class User(BaseModel):
 
     def getAll(self):
         return User.select(graph).all()
+
+    def getRecommendationForUser(self, username):
+        users = graph.run("match (i:User {username: \"%s\"})-[:FOLLOWS]-(u:User)-[:FOLLOWS]-(tf:User) WHERE not (i)-[:FOLLOWS]->(tf) return distinct tf"%(username))
+        return [User(**user['tf']) for user in users]

@@ -18,8 +18,6 @@ def create_app(test_config=None):
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 60
     app.config['JWT_SECRET_KEY'] = 'aVerySecretJwtSigningKey'
 
-    JSONSchemaValidator(app=app, root="schemas")
-
     @app.errorhandler(404)
     def page_not_found(e):
         return jsonify({'message': 'The requested URL was not found on the server.'}), 404
